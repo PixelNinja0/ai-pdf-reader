@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PDF Reader</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Sprunglink: erlaubt Tastaturnutzern, die Navigation zu ueberspringen -->
+    <a class="skip-link" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+
+    <main id="hauptinhalt" class="container">
+        <header>
+            <h1>AI PDF Reader</h1>
+            <p class="untertitel">
+                PDF hochladen und per Frage erkunden lassen.
+            </p>
+        </header>
+
+        <!-- Schritt 1: Upload -->
+        <section aria-labelledby="upload-titel">
+            <h2 id="upload-titel">1. Dokument hochladen</h2>
+            <div class="feld">
+                <label for="pdf-datei">PDF-Datei auswaehlen</label>
+                <input type="file" id="pdf-datei" name="file" accept="application/pdf">
+            </div>
+            <button type="button" id="upload-knopf">PDF hochladen</button>
+            <!-- Statusmeldungen zum Upload werden hier angekuendigt -->
+            <p id="upload-status" class="status" role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- Schritt 2: Frage. Bis zum Upload deaktiviert. -->
+        <section aria-labelledby="frage-titel">
+            <h2 id="frage-titel">2. Frage stellen</h2>
+            <div class="feld">
+                <label for="frage-feld">Deine Frage zum Dokument</label>
+                <input type="text" id="frage-feld" name="frage"
+                       autocomplete="off" disabled>
+            </div>
+            <button type="button" id="frage-knopf" disabled>Frage absenden</button>
+        </section>
+
+        <!-- Antwortbereich. aria-live sorgt dafuer, dass ein Screenreader
+             eine neue Antwort automatisch vorliest, ohne Seitenreload. -->
+        <section aria-labelledby="antwort-titel" id="antwort-bereich" hidden>
+            <h2 id="antwort-titel">Antwort</h2>
+            <div id="antwort-inhalt" role="region" aria-live="polite"
+                 tabindex="-1"></div>
+            <button type="button" id="vorlesen-knopf">Antwort vorlesen</button>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+/* AI PDF Reader -- Stylesheet
+ *
+ * Gestaltungsprinzip: ruhig und funktional. Die Qualitaet kommt aus
+ * Abstaenden, Typografie und klaren Zustaenden, nicht aus Effekten.
+ * Alle Farbpaare sind auf WCAG-AA-Kontrast ausgelegt.
+ */
+
+:root {
+    --hintergrund: #fbfaf8;
+    --flaeche: #ffffff;
+    --text: #1a1a1a;
+    --text-leise: #565656;      /* >= 4.5:1 auf --hintergrund */
+    --akzent: #1f5c4d;          /* dunkelgruen, hoher Kontrast auf weiss */
+    --akzent-text: #ffffff;
+    --rand: #d8d4cd;
+    --fokus: #c2410c;           /* warmer Kontrastton fuer Fokusringe */
+    --fehler: #b42318;
+    --erfolg: #1f5c4d;
+    --radius: 8px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Georgia, "Times New Roman", serif;
+    background-color: var(--hintergrund);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2.5rem 1.5rem;
+}
+
+/* Sprunglink: ausserhalb des Sichtbereichs, bis er Fokus erhaelt */
+.skip-link {
+    position: absolute;
+    left: -999px;
+    top: 0;
+    background: var(--akzent);
+    color: var(--akzent-text);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+}
+.skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    z-index: 10;
+}
+
+.container {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+header {
+    margin-bottom: 2.5rem;
+}
+
+h1 {
+    font-size: 2rem;
+    color: var(--akzent);
+    margin-bottom: 0.25rem;
+}
+
+.untertitel {
+    color: var(--text-leise);
+}
+
+h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+}
+
+section {
+    background: var(--flaeche);
+    border: 1px solid var(--rand);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.feld {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+input[type="text"],
+input[type="file"] {
+    width: 100%;
+    padding: 0.7rem;
+    font-size: 1rem;
+    font-family: system-ui, sans-serif;
+    border: 1px solid var(--rand);
+    border-radius: var(--radius);
+    background: var(--hintergrund);
+}
+
+button {
+    font-family: system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.7rem 1.4rem;
+    background: var(--akzent);
+    color: var(--akzent-text);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+button:hover {
+    background: #18483c;
+}
+
+/* Deaktivierte Elemente: sichtbar inaktiv, nicht nur ausgegraut */
+button:disabled,
+input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Sichtbarer Fokusring auf ALLEN interaktiven Elementen.
+ * Zentral fuer Tastatur- und Screenreader-Nutzung -- niemals entfernen. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+#antwort-inhalt:focus-visible {
+    outline: 3px solid var(--fokus);
+    outline-offset: 2px;
+}
+
+.status {
+    margin-top: 0.75rem;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    min-height: 1.4rem;   /* verhindert Layoutsprung beim Erscheinen */
+}
+.status.fehler { color: var(--fehler); }
+.status.erfolg { color: var(--erfolg); }
+
+#antwort-inhalt {
+    padding: 1rem;
+    background: var(--hintergrund);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    white-space: pre-wrap;   /* Absaetze der AI-Antwort erhalten */
+}
