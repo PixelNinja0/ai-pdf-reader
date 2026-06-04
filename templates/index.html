@@ -1,56 +1,93 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI PDF Reader</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI PDF Reader</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <!-- Sprunglink: erlaubt Tastaturnutzern, die Navigation zu ueberspringen -->
-    <a class="skip-link" href="#hauptinhalt">Zum Hauptinhalt springen</a>
 
-    <main id="hauptinhalt" class="container">
-        <header>
-            <h1>AI PDF Reader</h1>
-            <p class="untertitel">
-                PDF hochladen und per Frage erkunden lassen.
-            </p>
-        </header>
+  <a class="skip-link" href="#main">Zum Hauptinhalt springen</a>
 
-        <!-- Schritt 1: Upload -->
-        <section aria-labelledby="upload-titel">
-            <h2 id="upload-titel">1. Dokument hochladen</h2>
-            <div class="feld">
-                <label for="pdf-datei">PDF-Datei auswaehlen</label>
-                <input type="file" id="pdf-datei" name="file" accept="application/pdf">
-            </div>
-            <button type="button" id="upload-knopf">PDF hochladen</button>
-            <!-- Statusmeldungen zum Upload werden hier angekuendigt -->
-            <p id="upload-status" class="status" role="status" aria-live="polite"></p>
-        </section>
+  <!-- App-Leiste -->
+  <header class="app-leiste">
+    <h1 class="app-titel">AI PDF Reader</h1>
+    <div id="dok-status" class="dok-status" role="region" aria-label="Dokumentstatus">
+      <span id="dok-status-leer" class="dok-status__leer"{% if pdf_geladen %} hidden{% endif %}>Kein Dokument geladen</span>
+      <span id="dok-status-aktiv" class="dok-status__aktiv"{% if not pdf_geladen %} hidden{% endif %}>
+        <span class="dok-punkt" aria-hidden="true">●</span>
+        <span id="dok-dateiname">{% if pdf_geladen %}Dokument geladen{% endif %}</span>
+        <button type="button" id="aendern-knopf" class="btn btn--aendern">Ändern</button>
+      </span>
+    </div>
+  </header>
 
-        <!-- Schritt 2: Frage. Bis zum Upload deaktiviert. -->
-        <section aria-labelledby="frage-titel">
-            <h2 id="frage-titel">2. Frage stellen</h2>
-            <div class="feld">
-                <label for="frage-feld">Deine Frage zum Dokument</label>
-                <input type="text" id="frage-feld" name="frage"
-                       autocomplete="off" disabled>
-            </div>
-            <button type="button" id="frage-knopf" disabled>Frage absenden</button>
-        </section>
+  <!-- Polite-Status-Ankündigungen (Upload-Erfolg, Dok-Wechsel) -->
+  <div id="status-live" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+  <!-- Assertive Fehler-Ankündigungen -->
+  <div id="fehler-live" role="alert" aria-atomic="true" class="sr-only"></div>
 
-        <!-- Antwortbereich. aria-live sorgt dafuer, dass ein Screenreader
-             eine neue Antwort automatisch vorliest, ohne Seitenreload. -->
-        <section aria-labelledby="antwort-titel" id="antwort-bereich" hidden>
-            <h2 id="antwort-titel">Antwort</h2>
-            <div id="antwort-inhalt" role="region" aria-live="polite"
-                 tabindex="-1"></div>
-            <button type="button" id="vorlesen-knopf">Antwort vorlesen</button>
-        </section>
-    </main>
+  <main id="main">
 
-    <script src="/static/app.js"></script>
+    <!-- Zustand: kein PDF geladen -->
+    <section id="upload-sektion" class="upload-sektion" aria-labelledby="upload-h2"{% if pdf_geladen %} hidden{% endif %}>
+      <h2 id="upload-h2" class="sr-only">Dokument hochladen</h2>
+      <p class="upload-hinweis">PDF hochladen und per Frage erkunden.</p>
+      <div class="upload-karte">
+        <!-- Input bleibt im DOM für AT-Zugang; Knopf triggert .click() -->
+        <label for="pdf-datei" class="sr-only">PDF-Datei auswählen</label>
+        <input type="file" id="pdf-datei" accept="application/pdf" class="sr-only">
+        <p class="upload-karte__text">PDF hier auswählen</p>
+        <button type="button" id="upload-knopf" class="btn btn--primaer">PDF laden</button>
+        <div id="upload-fehler" class="fehler-box" hidden></div>
+      </div>
+    </section>
+
+    <!-- Zustand: PDF geladen – Gesprächsverlauf -->
+    <section id="verlauf-sektion" class="verlauf-sektion" aria-labelledby="verlauf-h2"{% if not pdf_geladen %} hidden{% endif %}>
+      <h2 id="verlauf-h2">Gespräch</h2>
+      <!-- role="log" kündigt neue Antworten höflich an -->
+      <div id="verlauf" class="verlauf" role="log" aria-live="polite" aria-label="Gesprächsverlauf">
+        <p id="leer-zustand" class="leer-zustand" tabindex="-1">Stell eine Frage zu deinem Dokument.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Eingabe-Leiste (fest unten auf Desktop) -->
+  <div class="eingabe-leiste" id="eingabe-leiste"{% if not pdf_geladen %} hidden{% endif %}>
+    <form id="frage-form" class="eingabe-form" aria-label="Frage stellen" novalidate>
+      <div class="eingabe-feld-wrap">
+        <label for="frage-feld" class="eingabe-label">Frage zum Dokument</label>
+        <textarea
+          id="frage-feld"
+          class="eingabe-feld"
+          name="frage"
+          placeholder="Frage zum Dokument …"
+          rows="1"
+          autocomplete="off"{% if not pdf_geladen %} disabled{% endif %}
+        ></textarea>
+      </div>
+      <button type="submit" id="senden-knopf" class="btn btn--primaer btn--senden"{% if not pdf_geladen %} disabled{% endif %}>Senden</button>
+    </form>
+  </div>
+
+  <!-- Bestätigungs-Dialog: Dokument wechseln -->
+  <dialog id="wechsel-dialog" aria-labelledby="dialog-titel" aria-describedby="dialog-beschr">
+    <h2 id="dialog-titel">Dokument wechseln?</h2>
+    <p id="dialog-beschr">Neues Dokument laden? Das aktuelle Gespräch wird beendet.</p>
+    <div class="feld">
+      <label for="wechsel-datei">Neue PDF auswählen</label>
+      <input type="file" id="wechsel-datei" accept="application/pdf">
+    </div>
+    <div class="dialog-aktionen">
+      <button type="button" id="dialog-abbrechen" class="btn btn--sekundaer">Abbrechen</button>
+      <button type="button" id="dialog-laden" class="btn btn--primaer">Laden</button>
+    </div>
+    <div id="dialog-fehler" class="fehler-box" hidden></div>
+  </dialog>
+
+  <script src="/static/app.js"></script>
 </body>
 </html>
